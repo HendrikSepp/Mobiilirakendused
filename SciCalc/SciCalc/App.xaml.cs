@@ -1,15 +1,40 @@
-﻿namespace SciCalc
+﻿#if WINDOWS
+using Microsoft.UI;
+using Microsoft.UI.Windowing;
+using Windows.Graphics;
+#endif
+
+
+using SciCalc.Views;
+
+namespace SciCalc
 {
     public partial class App : Application
     {
+        const int WindowWidth = 1080;
+        const int WindowHeight = 1920;
         public App()
         {
             InitializeComponent();
-        }
 
-        protected override Window CreateWindow(IActivationState? activationState)
+#if WINDOWS
+        Microsoft.Maui.Handlers.WindowHandler.Mapper.AppendToMapping(nameof(IWindow), (handler, view) => 
         {
-            return new Window(new AppShell());
+            var mauiWindow = handler.VirtualView;
+            var nativeWindow = handler.PlatformView;
+            nativeWindow.Activate();
+            IntPtr windowHandle = WinRT.Interop.WindowNative.GetWindowHandle(nativeWindow);
+            WindowId windowID = Microsoft.UI.Win32Interop.GetWindowIdFromWindow(windowHandle);
+            AppWindow appWindow = Microsoft.UI.Windowing.AppWindow.GetFromWindowId(windowID);
+            appWindow.Resize(new SizeInt32(WindowWidth, WindowHeight));
+        });
+#endif
+
+            MainPage = new CalculatorPage();
         }
+        //protected override Window CreateWindow(IActivationState? activationState)
+        //{
+        //    return new Window(new CalculatorPage());
+        //}
     }
 }
